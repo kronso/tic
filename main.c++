@@ -1,24 +1,21 @@
 #include <iostream>
 #include <conio.h>
 #include <cstring>
+#include <time.h>
+#include <windows.h>
 
 #define clear() std::cout << "\e[1;1H\e[2J";
 #define GREEN_FG "\033[38;5;49m"
 #define BLACK_FG "\033[38;5;239m"
 #define RESET "\033[m"
-#define SIZE 3
+#define SIZE 4
 
 class Grid {
     private:
         char grid[SIZE][SIZE];
     public:
-        int cursor_y, cursor_x;
-        bool x_turn = false, o_turn = true;
-        
-        Grid(int y, int x) {
-            cursor_y = y;
-            cursor_x = x;
-        }
+        int cursor_y = SIZE / 2, cursor_x = SIZE / 2;
+        bool x_turn = true, o_turn = false;
 
         void initGrid();
         void printGrid();
@@ -26,12 +23,12 @@ class Grid {
 
         void playerTurn();
         void reset(char *arr);
+        char *compare(char c, char *arr);
         bool winner();
         bool tie();
+
+        void enemyPlay();
 };
-
-
-
 
 void Grid::initGrid() {
     for (int i = 0; i < SIZE; i++) {
@@ -79,6 +76,7 @@ void Grid::moveCursor() {
                 if (x_turn) { grid[cursor_y][cursor_x] = 'X'; }
                 else if (o_turn) { grid[cursor_y][cursor_x] = 'O'; }
                 playerTurn();
+                enemyPlay();
             }
             break;    
         default:
@@ -95,7 +93,7 @@ void Grid::playerTurn() {
 }
 void Grid::reset(char *arr) {
     // '\0' to compare it with string literal "XXX" / "OOO"
-    for (int i = 0; i < SIZE + 1; i++) {
+    for (int i = 0; i < (SIZE + 1); i++) {
         arr[i] = '.';
         if (i == SIZE) { arr[i] = '\0'; }
     }
@@ -104,35 +102,38 @@ bool Grid::winner() {
     // extra + 1 for '\0'
     char check_row[SIZE + 1];
     char check_col[SIZE + 1];
-    
+    // string to compare to
+    char result[SIZE + 1];
     for (int i = 0; i < SIZE; i++) {
         reset(check_row); reset(check_col);
         for (int j = 0; j < SIZE; j++) {
             check_row[j] = grid[i][j];
             check_col[j] = grid[j][i]; 
-            if (strcmp(check_row, "XXX") == 0 || strcmp(check_row, "OOO") == 0) {
+            if (strcmp(check_row, compare('X', result)) == 0 || strcmp(check_row, compare('O', result)) == 0) {
                 return true;
-            } else if (strcmp(check_col, "XXX") == 0 || strcmp(check_col, "OOO") == 0) {
+            } else if (strcmp(check_col, compare('X', result)) == 0 || strcmp(check_col, compare('O', result)) == 0) {
                 return true;
             }
         }
     }
+    
     // I reused the two arrays for the left and right diagonal check 
     // might not be readable but it works :D
     reset(check_row); reset(check_col);
-    for (int i = -1; i < 2; i++) {
-        // left diagonal
-        check_row[i + 1] = grid[1 + i][1 + i];
-        // right diagonal
-        check_col[i + 1] = grid[1 + i][1 - i];
-        if (strcmp(check_row, "XXX") == 0 || strcmp(check_row, "OOO") == 0) {
+    for (int i = 0; i < SIZE; i++) {
+        // top-left to bottom-right diagonal
+        check_row[i] = grid[i][i];
+        // top-right to bottom-left diagonal
+        check_col[i] = grid[i][(SIZE - 1) - i];
+        if (strcmp(check_row, compare('X', result)) == 0 || strcmp(check_row, compare('O', result)) == 0) {
             return true;
-        } else if (strcmp(check_col, "XXX") == 0 || strcmp(check_col, "OOO") == 0) {
+        } else if (strcmp(check_col, compare('X', result)) == 0 || strcmp(check_col, compare('O', result)) == 0) {
             return true;
         }
     }
     return false;
 }
+
 bool Grid::tie() {
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
@@ -142,20 +143,53 @@ bool Grid::tie() {
     return true;
 }
 
+char *Grid::compare(char c, char *arr) {
+    for (int i = 0; i < (SIZE + 1); i++) {
+        arr[i] = c;
+        if (i == SIZE) { arr[i] = '\0'; }
+    }
+    return arr;
+}
+
+void Grid::enemyPlay() {
+    srand(time(NULL));
+    int rand_row, rand_col;
+    while (!winner() && !tie()) {
+        rand_row = rand() % SIZE;
+        rand_col = rand() % SIZE;
+        if (grid[rand_row][rand_col] == '.') {
+            grid[rand_row][rand_col] = 'O';
+            // playerTurn();
+            return;
+        } else { continue; }
+    }
+}
+
+void delayPrint(const char *s, float delay_ms = 50) { 
+    for (; *s; s++) {
+        std::cout << *s;
+        Sleep(delay_ms);
+    }
+    Sleep(1000);
+}
+
 int main() {
-    Grid g(1, 1);
+    Grid g;
     g.initGrid();
+    // delayPrint("Use WASD to move...");
+    // delayPrint("\nEnter to place...");
+
     do {
         g.printGrid();
         if (g.x_turn) { std::cout << "\nX's TURN"; }
-        else if (g.o_turn) { std::cout << "\nO's TURN"; }
+        else if (g.o_turn) { std::cout << "\nO's TURN";}
         g.moveCursor();
     } while (!g.winner() && !g.tie());
 
     g.printGrid();
     if (g.winner()) {
-        if (!g.x_turn) { std::cout << "\nX WON"; }
-        else if (!g.o_turn) { std::cout << "\nO WON"; }
+        if (g.x_turn) { std::cout << "\nX WON"; }
+        else if (g.o_turn) { std::cout << "\nO WON"; }
     } else if (g.tie()) { std::cout << "TIE"; }
 
     return EXIT_SUCCESS;
