@@ -228,12 +228,12 @@ void delayPrint(const char *s, float delay_ms = 50) {
 
 int main() {
     // constructor to choose 'X' or 'O' respectively
-    // nothing for default
+    // true for default
     Grid g(true);
     g.initGrid();
     // instructions
-    // delayPrint("Use WASD to move...");
-    // delayPrint("\nEnter to place...");
+    delayPrint("Use WASD to move...");
+    delayPrint("\nEnter to place...");
 
     do {
         g.printGrid();
@@ -247,8 +247,8 @@ int main() {
 
     g.printGrid();
     if (g.winner()) {
-        if (!g.x_turn) { std::cout << "\nx won"; }
-        else if (!g.o_turn) { std::cout << "\no won"; }
+        if (!g.x_turn) { std::cout << "\nx wins"; }
+        else if (!g.o_turn) { std::cout << "\no wins"; }
     } else if (g.tie()) { std::cout << "TIE"; }
 
     return EXIT_SUCCESS;
