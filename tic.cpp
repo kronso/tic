@@ -4,50 +4,7 @@
 #include <time.h>
 #include <windows.h>
 
-#define clear() std::cout << "\e[1;1H\e[2J";
-
-#define GREEN_FG "\033[38;5;49m"
-#define BLACK_FG "\033[38;5;239m"
-#define RED_FG "\033[38;5;197m"
-#define RESET "\033[m"
-
-// change this for different sizes
-// height and width of grid will always be the same
-// if the size is even, the highlighting is a bit scuffed
-#define SIZE 3
-
-class Grid {
-    char grid[SIZE][SIZE];
-    public:
-        int cursor_y = SIZE / 2, cursor_x = SIZE / 2;
-        // ROWS AND top-left to bottom-right diagonal
-        int result_x[SIZE];
-        int result_y[SIZE];
-        // COLS AND top-right to bottom-left diagonal
-        int result_x1[SIZE];
-        int result_y1[SIZE];
-
-        bool x_turn, o_turn;
-
-        Grid(bool x = true, bool o = false) {
-            x_turn = x;
-            o_turn = o;
-        }
-
-        void initGrid();
-        void printGrid();
-        bool highlightResult(int y, int x);
-        void moveCursor();
-
-        void playerTurn();
-        void resetResult(char *arr);
-        void resetPosition(int *arr);
-        char *compare(char c, char *arr);
-        bool winner();
-        bool tie();
-
-        void enemyPlay();
-};
+#include "tic.hpp"
 
 void Grid::initGrid() {
     for (int i = 0; i < SIZE; i++) {
@@ -215,41 +172,4 @@ void Grid::enemyPlay() {
             return;
         } else { continue; }
     }
-}
-
-// just for aesthetic purposes
-void delayPrint(const char *s, float delay_ms = 50) { 
-    for (; *s; s++) {
-        std::cout << *s;
-        Sleep(delay_ms);
-    }
-    Sleep(1000);
-}
-
-int main() {
-    // constructor to choose 'X' or 'O' respectively
-    // true for default
-    Grid g(true);
-    g.initGrid();
-    // instructions
-    delayPrint("Use WASD to move...");
-    delayPrint("\nEnter to place...");
-
-    do {
-        g.printGrid();
-        if (g.x_turn) { std::cout << "\nx's turn..."; }
-        else if (g.o_turn) { std::cout << "\no's turn...";}
-        g.moveCursor();
-    } while (!g.winner() && !g.tie());
-
-    // just to get rid of the players cursor
-    g.cursor_y = g.cursor_x = -1;
-
-    g.printGrid();
-    if (g.winner()) {
-        if (!g.x_turn) { std::cout << "\nx wins"; }
-        else if (!g.o_turn) { std::cout << "\no wins"; }
-    } else if (g.tie()) { std::cout << "TIE"; }
-
-    return EXIT_SUCCESS;
 }
