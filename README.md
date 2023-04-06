@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-# THE TIC
-=======
 # TIC
->>>>>>> f09f0236b0d5f787736e3b5bda9e6b62c945836a
 I see the player you mean.
 
 PLAYERNAME?
