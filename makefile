@@ -1,12 +1,17 @@
 
-tic: main.o tic.o
-	g++ main.o tic.o -o tic
+CC = g++
 
-main.o: main.cpp
-	g++ -c main.cpp
+CFILES = main.cpp tic.cpp
+OBJECTS = main.o tic.o
 
-tic.o: tic.cpp tic.hpp
-	g++ -c tic.cpp
+BINARY = bin
 
+all: $(BINARY)
+
+$(BINARY): $(OBJECTS)
+	$(CC) $^ -o $@
+
+%.o: %.c
+	$(CC) -c $^
 clean:
-	del *.o tic
+	del $(BINARY) $(OBJECTS)
